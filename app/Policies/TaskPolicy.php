@@ -14,5 +14,22 @@ class TaskPolicy
     {
         return $user->id === $task->user_id;
     }
+
+    public function update(User $user, Task $task)
+    {
+        return $user->id === $task->user_id;
+    }
+
+    public function show(User $user, Task $task)
+    {
+        return $user->id === $task->user_id;
+    }
+
+    public function view(User $user, Task $task)
+    {
+        return $user->id === $task->user_id; // O cualquier lógica que aplique
+    }
+
+
 }
 

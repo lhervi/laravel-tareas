@@ -8,14 +8,14 @@ use App\Models\Task;               // Modelo asociado
 use Illuminate\Http\Request;       // Para manejar solicitudes HTTP
 use Illuminate\Support\Facades\Auth; // Para manejar la autenticación
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Para políticas de autorización
-
-
+use App\Rules\ValidStatus;
 
 
 class TaskController extends Controller
 {
+    use AuthorizesRequests;
     /**
-     * Muestra una lista de tareas del usuario autenticado.
+     * Muestra una lista de tareas del usuario autenticado .
      *
      * @return \Illuminate\View\View
      */
@@ -35,7 +35,8 @@ class TaskController extends Controller
      */
     public function create()
     {
-        return view('tasks.create');
+        $statuses = Task::STATUSES;
+        return view('tasks.create', compact('statuses'));
     }
 
     /**
@@ -43,22 +44,22 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-         // Validación de datos
-         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+        // Validación de datos
+
+        $validated = $request->validate([
+            'title' =>  'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
+            'status' => ['required', new ValidStatus],
         ]);
 
         // Creación de la tarea
-        Task::create([
-            'title' => $validated['title'],
-            'description' => $validated['description'] ?? null,
-            'due_date' => $validated['due_date'] ?? null,
-            'user_id' => Auth::id(),
-        ]);
+        $task = new Task;
+        $task->fill($validated);
+        $task->user_id = Auth::id(); // Asignación manual
+        $task->save();
 
-        return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
+        return redirect()->route('tasks.index', )->with('success', 'Task created successfully.');
 
     }
 
@@ -68,13 +69,7 @@ class TaskController extends Controller
      * @param  \App\Models\Task  $task
      * @return \Illuminate\View\View
      */
-    public function show(Task $task)
-    {
-        // Validamos que la tarea pertenezca al usuario autenticado
-        $this->authorize('view', $task);
 
-        return view('tasks.show', compact('task'));
-    }
 
     /**
      * Muestra el formulario para editar una tarea.
@@ -89,6 +84,25 @@ class TaskController extends Controller
         return view('tasks.edit', compact('task'));
     }
 
+
+    // *********************************************************
+
+    public function show(Task $task)
+    {
+
+        $taskInfo = [
+            'edit-task-id' => $task->id,
+            'edit-title' => $task->title,
+            'edit-description' => $task->description,
+            'edit-status' => $task->status,
+            'edit-due-date' => $task->due_date,
+            'statuses' => $statuses = Task::STATUSES
+        ];
+
+        return response()->json($taskInfo);
+
+    }
+
     /**
      * Actualiza una tarea en la base de datos.
      *
@@ -98,17 +112,23 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
+
+        $a=5;
+
         $this->authorize('update', $task);
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' =>  'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
+            'status' => ['required', new ValidStatus],
         ]);
 
         $task->update($validated);
 
-        return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
+        //return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
+        //return redirect()->route('tasks.index')->with(['success'=> 'Task updated successfully.']);
+        return response()->json(['success' => 'Task updated successfully.']);
     }
 
     /**
@@ -129,11 +149,16 @@ class TaskController extends Controller
 
         $task->delete();
 
-        return response()->json(['message' => 'La tarea fue eliminada']);
+        return response()->json(['success' => 'Task updated successfully.', 'ok'=> true]);
+
+        //return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
 
         //return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
     }
 
-
+    public function statuses()
+    {
+        return response()->json(['statuses' => Task::STATUSES]);
+    }
 
 }

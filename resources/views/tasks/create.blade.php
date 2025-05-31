@@ -23,8 +23,26 @@
                             <x-input-label for="description" :value="__('Description')" class="mt-4" />
                             <x-text-input id="description" name="description" type="textarea"
                                 class="mt-2 mb-2 block w-full" />
-                            <x-input-error class="mt-2" :messages="$errors->get('title')" />
+                            <x-input-error class="mt-2" :messages="$errors->get('description')" />
                         </div>
+
+                        <div>
+                            <x-input-label for="due" :value="__('Fecha límite')" class="mt-4" />
+                            <x-text-input id="due" name="due" type="date" class="mt-2 mb-2 block w-full"
+                                value="{{ date('Y-m-d') }}" />
+                            <x-input-error class="mt-2" :messages="$errors->get('due')" />
+                        </div>
+
+                        <!------------------>
+
+                        <div>
+                            <x-input-label for="status" :value="__('Status')" class="mt-4" />
+                            <x-select-input id="status" name="status" class="mt-2 mb-2 block w-full"
+                                :opciones="json_encode($statuses)" />
+                            <x-input-error class="mt-2" :messages="$errors->get('status')" />
+                        </div>
+
+                        <!-------------------->
 
                         <input type="hidden" id="due_date" name="due_date" value="{{ date('Y-m-d') }}">
 

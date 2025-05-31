@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Models\Task;
 
 return new class extends Migration
 {
@@ -15,7 +16,8 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->enum('status', ['pending', 'in-progress', 'completed'])->default('pending');
+            //$table->enum('status', ['pending', 'in-progress', 'completed'])->default('pending');
+            $table->enum('status', Task::STATUSES)->default('pending');
             $table->dateTime('due_date')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
